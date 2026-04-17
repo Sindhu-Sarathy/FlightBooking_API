@@ -72,30 +72,35 @@ public class FlightChatbotAssistant {
     """;
 
 
-    public FlightChatbotAssistant(ChatClient.Builder builder, ChatMemory chatMemory,FlightTools flightTools) {
-            this.chatClient = builder
-                    .defaultSystem(prompt.formatted(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
-                    .build();
+    public FlightChatbotAssistant(ChatClient.Builder builder,ChatMemory chatMemory,FlightTools flightTools) {
         this.chatMemory=chatMemory;
         this.flightTools=flightTools;
+
+            this.chatClient = builder
+                      .defaultSystem(prompt.formatted(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
+                      .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                      .defaultTools(flightTools)
+                      .build();
+
     }
 
     public String chat(String sessionId,String message){
+        IO.println(sessionId);
+        IO.println(message);
         try{
-            var response= chatClient.prompt()
+            String response= chatClient.prompt(message)
+                    .advisors(a-> a.param(ChatMemory.CONVERSATION_ID,sessionId))
                     .user(message)
-                    .advisors(spec -> spec
-                            .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                            .param(ChatMemory.CONVERSATION_ID, sessionId))
-                    .tools(flightTools)
-                    .call();
-
-            if(response == null || response.content() == null){
+                    .call()
+                    .content();
+            IO.println(response);
+            if(response == null){
                 return "No response from AI";
             }
-            return response.content();
+            return response;
 
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

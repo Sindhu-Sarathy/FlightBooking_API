@@ -7,15 +7,15 @@ import org.springframework.web.bind.annotation.*;
 import se.lexicon.flightbooking_api.service.FlightChatbotAssistant;
 
 @RestController
-@RequestMapping("/api/flights/ai/flight-book")
+@RequestMapping("/api/flights/ai")
 @RequiredArgsConstructor
 @Validated
 public class FlightBookChatbotController {
     private final FlightChatbotAssistant assistant;
 
-    @PostMapping
+    @GetMapping()
     public String chat(@RequestParam @NotBlank String sessionId,
-                       @RequestBody @NotBlank String message){
+                       @RequestParam @NotBlank String message){
         try{
 
             return assistant.chat(sessionId,message);
